@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burger King Codes</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .navbar {
+            background-color: #EF4444;
+        }
+
+        .navbar a {
+            color: #FFFFFF;
+        }
+
+        .card {
+            background-color: #F3F4F6;
+            color: #111827;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+        }
+
+        .filter-bar {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .filter-bar select {
+            padding: 5px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="navbar bg-red-600 p-4">
+        <div class="max-w-2xl mx-auto flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-white">Burger King Codes</h1>
+            <nav class="space-x-4">
+                <a href="credits.html" class="text-white hover:text-gray-200">Credits</a>
+            </nav>
+        </div>
+    </div>
+    <div class="max-w-2xl mx-auto bg-white p-8 rounded shadow-md mt-4">
+        <div class="filter-bar">
+            <label for="sortSelect" class="text-lg font-semibold">Sort By:</label>
+            <select id="sortSelect" onchange="sortCodes()">
+                <option value="price">Price</option>
+                <option value="abc">Alphabetically</option>
+            </select>
+        </div>
+        <div class="search-bar">
+            <label for="searchInput" class="text-lg font-semibold">Search:</label>
+            <input type="text" id="searchInput" class="w-full p-2 border border-gray-300 rounded">
+        </div>
+        <div id="codesList" class="grid grid-cols-1 gap-4"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            fetch('burgerKing.CSV')
+                .then(response => response.text())
+                .then(data => {
+                    const rows = data.split('\n').map(row => row.split(';'));
+                    const codesList = document.getElementById('codesList');
+                    rows.forEach(row => {
+                        const [id, name, preis, anzahl] = row;
+
+                        const card = document.createElement('div');
+                        card.classList.add('card', 'p-4', 'rounded', 'shadow-md');
+                        card.innerHTML = `
+                            <p class="text-lg font-semibold">${name}</p>
+                            <p>ID: ${id}</p>
+                            <p>Price: ${preis} CHF</p>
+                            <p>Quantity: ${anzahl}</p>
+                        `;
+                        codesList.appendChild(card);
+                    });
+                })
+                .catch(error => console.error('Error fetching CSV:', error));
+
+            const searchInput = document.getElementById('searchInput');
+            const sortSelect = document.getElementById('sortSelect');
+
+            searchInput.addEventListener('input', filterCodes);
+            sortSelect.addEventListener('change', sortCodes);
+
+            function filterCodes() {
+                const searchQuery = searchInput.value.toLowerCase();
+                const cards = document.querySelectorAll('.card');
+
+                cards.forEach(card => {
+                    const cardName = card.querySelector('.text-lg').textContent.toLowerCase();
+                    if (cardName.includes(searchQuery)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+
+            function sortCodes() {
+                const selectedValue = sortSelect.value;
+                const cards = document.querySelectorAll('.card');
+
+                const sortedCards = Array.from(cards).sort((a, b) => {
+                    const nameA = a.querySelector('.text-lg').textContent.toLowerCase();
+                    const nameB = b.querySelector('.text-lg').textContent.toLowerCase();
+
+                    if (selectedValue === 'price') {
+                        const priceA = parseFloat(a.querySelector('p:nth-child(3)').textContent.split(' ')[1]);
+                        const priceB = parseFloat(b.querySelector('p:nth-child(3)').textContent.split(' ')[1]);
+                        return priceA - priceB;
+                    } else {
+                        return nameA.localeCompare(nameB);
+                    }
+                });
+
+                const codesList = document.getElementById('codesList');
+                codesList.innerHTML = '';
+
+                sortedCards.forEach(card => {
+                    codesList.appendChild(card);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
