@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,8 +34,24 @@
             padding: 5px;
             margin-right: 10px;
         }
+
+        .vote {
+            display: inline-block;
+            overflow: hidden;
+            width: 40px;
+            height: 25px;
+            cursor: pointer;
+            background: url('https://i.stack.imgur.com/iqN2k.png');
+            background-position: 0 -25px;
+        }
+
+        .vote.on {
+            background-position: 0 2px;
+            background-color: orange;
+        }
     </style>
 </head>
+
 <body class="bg-gray-100">
     <div class="navbar bg-red-600 p-4">
         <div class="max-w-2xl mx-auto flex items-center justify-between">
@@ -50,6 +67,7 @@
             <select id="sortSelect" onchange="sortCodes()">
                 <option value="price">Price</option>
                 <option value="abc">Alphabetically</option>
+                <option value="upvotes">Upvotes</option>
             </select>
         </div>
         <div class="search-bar">
@@ -67,6 +85,8 @@
                 .then(data => {
                     const rows = data.split('\n').map(row => row.split(';'));
                     const codesList = document.getElementById('codesList');
+                    const votedCodes = new Set();
+
                     rows.forEach(row => {
                         const [id, name, preis, anzahl] = row;
 
@@ -77,6 +97,9 @@
                             <p>ID: ${id}</p>
                             <p>Price: ${preis} CHF</p>
                             <p>Quantity: ${anzahl}</p>
+                            Click to upvote: 
+                                <span class="sprite vote" onclick="upvote(this)"></span>
+                                <span class="upvotes">0</span>
                         `;
                         codesList.appendChild(card);
                     });
@@ -107,27 +130,52 @@
                 const selectedValue = sortSelect.value;
                 const cards = document.querySelectorAll('.card');
 
-                const sortedCards = Array.from(cards).sort((a, b) => {
-                    const nameA = a.querySelector('.text-lg').textContent.toLowerCase();
-                    const nameB = b.querySelector('.text-lg').textContent.toLowerCase();
+                if (selectedValue === 'upvotes') {
+                    const sortedCards = Array.from(cards).sort((a, b) => {
+                        const upvotesA = parseInt(a.querySelector('.upvotes').textContent);
+                        const upvotesB = parseInt(b.querySelector('.upvotes').textContent);
+                        return upvotesB - upvotesA;
+                    });
 
-                    if (selectedValue === 'price') {
-                        const priceA = parseFloat(a.querySelector('p:nth-child(3)').textContent.split(' ')[1]);
-                        const priceB = parseFloat(b.querySelector('p:nth-child(3)').textContent.split(' ')[1]);
-                        return priceA - priceB;
-                    } else {
-                        return nameA.localeCompare(nameB);
-                    }
-                });
+                    const codesList = document.getElementById('codesList');
+                    codesList.innerHTML = '';
 
-                const codesList = document.getElementById('codesList');
-                codesList.innerHTML = '';
+                    sortedCards.forEach(card => {
+                        codesList.appendChild(card);
+                    });
+                } else {
+                    const sortedCards = Array.from(cards).sort((a, b) => {
+                        const nameA = a.querySelector('.text-lg').textContent.toLowerCase();
+                        const nameB = b.querySelector('.text-lg').textContent.toLowerCase();
 
-                sortedCards.forEach(card => {
-                    codesList.appendChild(card);
-                });
+                        if (selectedValue === 'price') {
+                            const priceA = parseFloat(a.querySelector('p:nth-child(3)').textContent.split(' ')[1]);
+                            const priceB = parseFloat(b.querySelector('p:nth-child(3)').textContent.split(' ')[1]);
+                            return priceA - priceB;
+                        } else {
+                            return nameA.localeCompare(nameB);
+                        }
+                    });
+
+                    const codesList = document.getElementById('codesList');
+                    codesList.innerHTML = '';
+
+                    sortedCards.forEach(card => {
+                        codesList.appendChild(card);
+                    });
+                }
             }
+
+            window.upvote = function (element) {
+                if (!element.classList.contains('on')) {
+                    const upvoteSpan = element.nextElementSibling;
+                    const upvotes = parseInt(upvoteSpan.textContent) + 1;
+                    upvoteSpan.textContent = upvotes;
+                    element.classList.add('on');
+                }
+            };
         });
     </script>
 </body>
+
 </html>

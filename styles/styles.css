@@ -1,0 +1,27 @@
+.navbar {
+    background-color: #EF4444;
+}
+
+.navbar a {
+    color: #FFFFFF;
+}
+
+.card {
+    background-color: #F3F4F6;
+    color: #111827;
+}
+
+.search-bar {
+    margin-bottom: 20px;
+}
+
+.filter-bar {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.filter-bar select {
+    padding: 5px;
+    margin-right: 10px;
+}
